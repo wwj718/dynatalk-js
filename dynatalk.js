@@ -64,6 +64,15 @@ Object.subclass('Agent',
     },
     interpret: function(message) {
       // The object interprets the message it understands
+      console.debug(`${this.id}: received message`, message)
+
+      if (message.action.name in [this._RESPONSE_ACTION_NAME, this._ERROR_ACTION_NAME]){
+        // Handle incoming responses. Only useful when agent is used as callee
+        console.debug("Handle incoming responses", message);
+      } else {
+        // the caller requests the agent to execute the command
+        this._commit(message)
+      }
     },
     respond_with: function(value) {
       // Sends a response with the given value.
@@ -101,8 +110,23 @@ Object.subclass('Agent',
       return message["meta"]["id"]
     },
 
+    _commit: function(message) {
+      /*
+      Invokes the action method
 
-
+      Args:
+            message: The incoming message specifying the action
+      */
+      try {
+        // todo policy
+        let action_method = this[message.action.name].bind(this); // function bind to the object 
+        action_method(message.action.args);
+      } catch(e) {
+        let error = `${this.id}: raised exception while committing action "${message['action']['name']}"` + e
+        alert(error);
+        this.raise_with(error);
+      }
+    },
     raise_with: function(error) {
         /*
         Sends an error response.
@@ -136,14 +160,14 @@ Object.subclass('Agent',
 });
 Agent.subclass('LivelyDemoAgent',
 'default category', {
-    interpret: function(message) {
-      if (message.action.name === "echo") {
-        this.respond_with(message.action.args.content)
-      } else {
-        // Smalltalk style
-        this.raise_with(`Message Not Understood: ${message.to}>>${message.action.name}`)
-      }
+    echo: function({content=null}) {
+      log(`echo: ${content}`)
+      this.respond_with(content);
     },
+    eval: function({code="1+1"}) {
+      let result = eval(code)
+      this.respond_with(result); 
+    }
 });
 Object.subclass('Supervisor',
 'documentation', {

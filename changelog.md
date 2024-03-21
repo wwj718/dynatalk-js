@@ -6,6 +6,7 @@
 
 -   结构化消息的解释过程(通过优化 Agent.interpret 方法)。目前的实现机制是: 将消息映射到对象方法
     -   LivelyDemoAgent(理解 `echo` 和 `eval`)
+-   这个版本就可以支持最初的目标了: "在 Squeak 里使用 Python 或浏览器的 API"
 
 [更多细节](./docs/0.2.0.md)
 

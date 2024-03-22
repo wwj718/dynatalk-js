@@ -66,10 +66,20 @@ Object.subclass('Agent',
       // The object interprets the message it understands
       console.debug(`${this.id}: received message`, message)
 
-      if (message.action.name in [this._RESPONSE_ACTION_NAME, this._ERROR_ACTION_NAME]){
+      if (this._RESPONSE_ACTION_NAME === message.action.name) {
         // Handle incoming responses. Only useful when agent is used as callee
-        console.debug("Handle incoming responses", message);
-      } else {
+        console.debug("Handle incoming response", message);
+        // process _promises
+        this._promises[message.meta.parent_id] && this._promises[message.meta.parent_id].resolve(message.action.args.value);
+        delete this._promises[message.meta.parent_id];
+      } 
+      else if (this._ERROR_ACTION_NAME === message.action.name){
+        console.debug("Handle incoming error", message);
+        // process _promises
+        this._promises[message.meta.parent_id] && this._promises[message.meta.parent_id].reject(message.action.args.error);
+        delete this._promises[message.meta.parent_id];
+      }
+      else {
         // the caller requests the agent to execute the command
         this._commit(message)
       }
@@ -108,6 +118,23 @@ Object.subclass('Agent',
       // this._outbound_queue.put(message) // todo loop, now is directly
       this.supervisor.send(message);
       return message["meta"]["id"]
+    },
+    request: function(message, timeout=3000) {
+        // send and wait the response
+        // timeout 3000 ms
+        let msg_id = this.send(message);
+        
+        return new Promise((resolve, reject) => {
+            this._promises[msg_id] = {resolve:resolve, reject:reject};
+            setTimeout(() => {
+                if (this._promises[msg_id]){
+                    console.debug(this._promises);
+                    let error = `request(${msg_id}) timeout(${timeout}ms)`;
+                    console.error(error);
+                    reject(error);
+                }
+            }, timeout);
+        });
     },
 
     _commit: function(message) {
@@ -152,6 +179,7 @@ Object.subclass('Agent',
       // let testAgent = new Agent("testAgent")
       this._RESPONSE_ACTION_NAME = "[response]";
       this._ERROR_ACTION_NAME = "[error]";
+      this._promises = {}; // for request;
       
       this.supervisor = supervisor;
       this.id = id; // agent id

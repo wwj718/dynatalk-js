@@ -5,19 +5,18 @@ module('users.wwj.dynatalk').requires().requiresLib({url: 'https://unpkg.com/mqt
 
 Object.subclass('MQTTSpace', // used global variable: window.space
 'default category', {
-    initialize: function() {
+    initialize: function(aSupervisor) {
       // How to create a singleton?
       // Will redefining the constructor modify the behavior of the lively class?
-      // Temporarily use a global variable(window.space) to remind that it already exists
-      // let space = new MQTTSpace();
       
-      if(window.space){
+      this.supervisor = aSupervisor;
+      
+      if(window.mqttClient){
+        // Temporarily use a global variable(window.supervisor) to remind that it already exists
         // throw new Error()
-        window.space.mqttClient.end();
-        alert("MQTTSpace should only be initialized once.");
+        window.mqttClient.end();
+        console.warn("Make sure there is only one mqtt client!");
       }
-      
-      this.supervisor = new Supervisor(this);
       
       this.mqttClient = mqtt.connect({
         host:'localhost',
@@ -41,7 +40,8 @@ Object.subclass('MQTTSpace', // used global variable: window.space
         this.onMessage(topic, message)
       });
       
-      window.space = this;
+      window.mqttClient = this.mqttClient;
+      
     },
 
     _publish: function(topic, payload) {
@@ -49,8 +49,14 @@ Object.subclass('MQTTSpace', // used global variable: window.space
       this.mqttClient.publish(topic, payload,{qos:1});
     },
     onMessage: function(topic, payload) {
-        log(payload.toString());
-        this.supervisor.onMessage(topic, payload);
+        console.debug(`(space) onMessage: ${payload.toString()}`);
+        // Prevent the mqtt message process from being broken
+        try{
+          this.supervisor.onMessage(topic, payload);
+        } catch(e) {
+          console.error(e);
+        }
+        
     },
 
 });
@@ -59,12 +65,12 @@ Object.subclass('Agent',
 
     _receive: function(message) {
       // Receives and handles an incoming message.
+      console.debug(`(${this.id}) received message`, message)
       this.current_message = message;
       this.interpret(this.current_message);
     },
     interpret: function(message) {
       // The object interprets the message it understands
-      console.debug(`${this.id}: received message`, message)
 
       if (this._RESPONSE_ACTION_NAME === message.action.name) {
         // Handle incoming responses. Only useful when agent is used as callee
@@ -114,7 +120,7 @@ Object.subclass('Agent',
       message["from"] = this.id
       if (!("meta" in message)) {message["meta"]={}}
       message["meta"]["id"] = crypto.randomUUID();
-      console.debug(`${this.id}: sending `, message)
+      console.debug(`(${this.id}) sending `, message)
       // this._outbound_queue.put(message) // todo loop, now is directly
       this.supervisor.send(message);
       return message["meta"]["id"]
@@ -150,7 +156,7 @@ Object.subclass('Agent',
         action_method(message.action.args);
       } catch(e) {
         let error = `${this.id}: raised exception while committing action "${message['action']['name']}"` + e
-        alert(error);
+        console.error(error);
         this.raise_with(error);
       }
     },
@@ -186,7 +192,7 @@ Object.subclass('Agent',
       this.current_message = null;
     },
 });
-Agent.subclass('LivelyDemoAgent',
+testAgent.subclass('LivelyDemoAgent',
 'default category', {
     echo: function({content=null}) {
       log(`echo: ${content}`)
@@ -207,11 +213,9 @@ Object.subclass('Supervisor',
       let message = this.parseToJson(payload); // mutation
       if (message){
         console.debug("(Supervisor) valid message: ", message);
-        for (let agent of this.agents){
-            if (message.to === agent.id){
-              // ignore mqtt topic, just use payload
-              agent._receive(message)
-            }
+        
+        if (message.to in this.agents){
+          this.agents[message.to]._receive(message)
         }
       }
     },
@@ -243,15 +247,17 @@ Object.subclass('Supervisor',
       return ("from" in message && "to" in message && "action" in message)
         
     },
-    initialize: function(space) {
-      this.space = space;
+    initialize: function() {
       
-      this.agents = [];
+      this.agents = {};
       this.initAgents();
+      
+      this.space = new MQTTSpace(this);
     },
     initAgents: function() {
       // todo: Dynamically manage agent life cycle
-      this.agents.push(new LivelyDemoAgent(this, "LivelyDemoAgent"));
+      let name = "LivelyDemoAgent";
+      this.agents[name] = new LivelyDemoAgent(this, name);
     },
 });
 

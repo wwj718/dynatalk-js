@@ -6,6 +6,7 @@
 
 -   重构
     -   调整对象组织形式: supervisor 包含 space
+    -   Supervisor 添加 getAgent 方法
 -   mqtt 的消息线程会触发 Agent interpret 方法(为了简单和可调试性, 开发阶段采用单线程), 添加了错误处理, 避免损坏 mqtt 线程(不然会造成意外的mqtt错误, 如重复发消息等)
 -   对方法进行归类
 

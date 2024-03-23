@@ -214,6 +214,11 @@ Agent.subclass('LivelyDemoAgent',
     }
 });
 Object.subclass('Supervisor',
+'accessing', {
+  getAgent: function(agentID) {
+    return this.agents[agentID]
+  },
+},
 'converting', {
   parseToJson: function(payload) {
     let result;
@@ -233,7 +238,8 @@ Object.subclass('Supervisor',
 },
 'initialize-release', {
   initialize: function() {
-      
+    // let supervisor = new Supervisor();
+    //  supervisor.getAgent('LivelyDemoAgent')
     this.agents = {};
     this.initAgents();
     

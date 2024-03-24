@@ -78,7 +78,7 @@ Object.subclass('Agent',
     try {
       // todo policy
       let action_method = this[message.action.name].bind(this); // function bind to the object 
-      action_method(message.action.args);
+      action_method(...message.action.args);
     } catch(e) {
       let error = `${this.id}: raised exception while committing action "${message['action']['name']}"` + e
       console.error(error);
@@ -208,11 +208,11 @@ Object.subclass('Agent',
 });
 Agent.subclass('LivelyDemoAgent',
 'default category', {
-    echo: function({content=null}) {
+    echo: function(content) {
       log(`echo: ${content}`)
       this.respond_with(content);
     },
-    eval: function({code="1+1"}) {
+    eval: function(code) {
       let result = eval(code)
       this.respond_with(result); 
     }

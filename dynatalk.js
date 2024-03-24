@@ -11,36 +11,40 @@ Object.subclass('MQTTSpace', // used global variable: window.space
     
     this.supervisor = aSupervisor;
     
-    if(window.mqttClient){
+    if(window._mqttClient){
       // Temporarily use a global variable(window.supervisor) to remind that it already exists
       // throw new Error()
-      window.mqttClient.end();
+      window._mqttClient.end();
       console.warn("Make sure there is only one mqtt client!");
     }
     
-    this.mqttClient = mqtt.connect({
+    let defaultConf = {
       host:'localhost',
       port:15675,
-      username: 'dynalab',
-      password: 'dynalab_rmq'
-    });
+      username: 'guest',
+      password: 'test'
+    };
+    let mergeConf = {...defaultConf, ...window._mqttConf};
+    console.debug("mergeConf:", mergeConf)
+    this._mqttClient = mqtt.connect(mergeConf);
 
-    this.mqttClient.on("connect", () => {
+    this._mqttClient.on("connect", () => {
       // + : subscribe all
-      this.mqttClient.subscribe("+", (err) => {
+      this._mqttClient.subscribe("+", (err) => {
         if (!err) {
+          // if not lively , redirect log to console.log
           log("subscribed to +")
         }
       });
     });
 
-    this.mqttClient.on("message", (topic, message) => {
+    this._mqttClient.on("message", (topic, message) => {
       // message is Buffer
       // In lively, functions within objects can be defined dynamically
       this.onMessage(topic, message)
     });
     
-    window.mqttClient = this.mqttClient;
+    window._mqttClient = this._mqttClient;
     
   },
 
@@ -48,7 +52,7 @@ Object.subclass('MQTTSpace', // used global variable: window.space
 'default category', {
     _publish: function(topic, payload) {
       // https://github.com/mqttjs/MQTT.js?tab=readme-ov-file#mqttclientpublishtopic-message-options-callback
-      this.mqttClient.publish(topic, payload,{qos:1});
+      this._mqttClient.publish(topic, payload,{qos:1});
     },
     onMessage: function(topic, payload) {
         console.debug(`(space) onMessage: ${payload.toString()}`);

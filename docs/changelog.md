@@ -14,6 +14,10 @@
 -   仅使用一层的 args list 传递参数(和MicroBlocks一致)
 -   使用 generateMessage 简化消息相关的方法
 -   结构化 MQTT 相关配置
+-   supervisor 支持动态添加 agent
+-   重构 demo agent
+    -   将 eval 方法从 demo agent 中移出(确保开箱使用的安全性)
+    -   demo agant 新增 add 方法, 演示如何处理多个参数
 
 ### 0.4.0(2024-03-23)
 

@@ -1,9 +1,20 @@
 # readme
 
+本仓库是 [Dynatalk](https://github.com/wwj718/Dynatalk) 的 JavaScript 客户端。
 
+> Dynatalk 致力于对象之间的交流, 尤其关心不同语言/环境之间的互操作。 -- [Dynatalk](https://github.com/wwj718/Dynatalk)
+
+要使用 Dynatalk, 需要做两件事:
+
+1. [运行一个 MQTT broker](https://github.com/wwj718/Dynatalk/blob/main/mqtt/readme.md)
+2. 然后当前语言的 dynatalk 客户端中开始编程。
+
+## 示例
+
+参考 [examples](./examples/).
+
+## 开发
+
+将当前仓库的 `dynatalk.js` 文件引入 [LivelyKernel](https://github.com/LivelyKernel/LivelyKernel)  进行开发。
 
 ## FAQ
-
-###  在 lively 之外的 JavaScript 环境使用它
-
-参考 [SqueakJS globals.js](https://github.com/codefrau/SqueakJS/blob/720e3e72fe663fbb587416a50466bd7e23634b76/globals.js#L55)

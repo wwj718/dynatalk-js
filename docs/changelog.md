@@ -2,6 +2,19 @@
 
 <!-- 参考 https://github.com/codefrau/SqueakJS?tab=readme-ov-file#changelog -->
 
+### 0.5.0(2024-03-25)
+
+-   public api
+    -   client
+        -   request
+        -   sendTo
+    -   server
+        -   responseWith
+        -   raiseWith
+-   仅使用一层的 args list 传递参数(和MicroBlocks一致)
+-   使用 generateMessage 简化消息相关的方法
+-   结构化 MQTT 相关配置
+
 ### 0.4.0(2024-03-23)
 
 -   重构

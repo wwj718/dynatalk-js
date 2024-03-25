@@ -108,16 +108,20 @@ Object.subclass('Agent',
   },
 },
 'initialize-release', {
-  initialize: function(supervisor, id, receive_own_broadcasts=false) {
+  initialize: function(agentID, receive_own_broadcasts=false) {
     // let testAgent = new Agent("testAgent")
     this._RESPONSE_ACTION_NAME = "[response]";
     this._ERROR_ACTION_NAME = "[error]";
     this._promises = {}; // for request;
     
-    this.supervisor = supervisor;
-    this.id = id; // agent id
+    this.supervisor = null;
+    this.id = agentID || this.constructor.name;
     this.current_message = null;
+    
   },
+    setSupervisor: function(supervisor) {
+        this.supervisor = supervisor;
+    },
 },
 'public api', {
   raiseWith: function(error) {
@@ -237,16 +241,27 @@ Agent.subclass('LivelyDemoAgent',
       log(`echo: ${content}`)
       this.respondWith(content);
     },
+
+    add: function(a, b) {
+        this.respondWith(a+b);
+    }
+});
+Agent.subclass('LivelyEvalAgent',
+'default category', {
     eval: function(code) {
       let result = eval(code)
       this.respondWith(result); 
-    }
+    },
 });
 Object.subclass('Supervisor',
 'accessing', {
   getAgent: function(agentID) {
     return this.agents[agentID]
   },
+    addAgent: function(agent) {
+        agent.setSupervisor(this);
+        this.agents[agent.id] = agent;
+    },
 },
 'converting', {
   parseToJson: function(payload) {
@@ -276,8 +291,10 @@ Object.subclass('Supervisor',
   },
   initAgents: function() {
     // todo: Dynamically manage agent life cycle
-    let name = "LivelyDemoAgent";
-    this.agents[name] = new LivelyDemoAgent(this, name);
+    
+    let agent = new LivelyDemoAgent("LivelyDemoAgent");
+    this.addAgent(agent);
+    
   },
 },
 'testing', {

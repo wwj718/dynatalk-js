@@ -82,7 +82,7 @@ Object.subclass('Agent',
     } catch(e) {
       let error = `${this.id}: raised exception while committing action "${message['action']['name']}"` + e
       console.error(error);
-      this.raise_with(error);
+      this.raiseWith(error);
     }
   },
   interpret: function(message) {
@@ -119,6 +119,44 @@ Object.subclass('Agent',
     this.current_message = null;
   },
 },
+'public api', {
+  raiseWith: function(error) {
+    /*
+    Sends an error response.
+
+    Args:
+        error: The error to send.
+    */
+    let parent_id = this.current_message.meta.id;
+    let to = this.current_message.from;
+    let action = this._ERROR_ACTION_NAME;
+    let args = {"error": error};
+    let message = this.generateMessage(parent_id, to, action, args)
+    
+    this.send(message);
+  },
+  
+  respondWith: function(value) {
+    // Sends a response with the given value.
+    let parent_id = this.current_message.meta.id;
+    let to = this.current_message.from;
+    let action = this._RESPONSE_ACTION_NAME;
+    let args = {"value": value};
+    let message = this.generateMessage(parent_id, to, action, args)
+    
+    this.send(message);
+  },
+  request: function(agentName, actionName, args) {
+        let parentID = null;
+        let message = this.generateMessage(parentID, agentName, actionName, args);
+        return this._request(message);
+  },
+  sendTo: function(agentName, actionName, args) {
+        let parentID = null;
+        let message = this.generateMessage(parentID, agentName, actionName, args);
+        return this.send(message);
+  },
+},
 'receiving', {
   _receive: function(message) {
     // Receives and handles an incoming message.
@@ -128,27 +166,8 @@ Object.subclass('Agent',
   },
 },
 'sending', {
-  raise_with: function(error) {
-    /*
-    Sends an error response.
 
-    Args:
-        error: The error to send.
-    */
-    this.send({
-        "meta": {
-            "parent_id": this.current_message["meta"]["id"],
-        },
-        "to": this.current_message['from'],
-        "action": {
-            "name": this._ERROR_ACTION_NAME,
-            "args": {
-                "error": `${error}`
-            }
-        }
-    })
-  },
-  request: function(message, timeout=3000) {
+  _request: function(message, timeout=3000) {
     // send and wait the response
     // timeout 3000 ms
     let msg_id = this.send(message);
@@ -165,21 +184,7 @@ Object.subclass('Agent',
         }, timeout);
     });
   },
-  respond_with: function(value) {
-    // Sends a response with the given value.
-    this.send({
-          "meta": {
-              "parent_id": this.current_message["meta"]["id"]
-          },
-          "to": this.current_message['from'],
-          "action": {
-              "name": this._RESPONSE_ACTION_NAME,
-              "args": {
-                  "value": value,
-              }
-          }
-      })
-  },
+
 
   send: function(message) {
     /*
@@ -192,14 +197,34 @@ Object.subclass('Agent',
           The meta.id of the sent message
     */
     
-    message["from"] = this.id
-    if (!("meta" in message)) {message["meta"]={}}
-    message["meta"]["id"] = crypto.randomUUID();
+  
     console.debug(`(${this.id}) sending `, message)
     // this._outbound_queue.put(message) // todo loop, now is directly
     this.supervisor.send(message);
-    return message["meta"]["id"]
+    return message.meta.id
   },
+    generateMessage: function(parentID, to, action, args) {
+      let message = {
+                        "meta": {
+                            "id": ""
+                        },
+                        "from": "",
+                        "to": "",
+                        "action": {
+                            "name": "",
+                            "args": ""
+                        }
+                    };
+                    
+      if (parentID){message.meta.parent_id = parentID};
+      message.meta.id = crypto.randomUUID();
+      message.to = to;
+      message.from = this.id;
+      message.action.name = action;
+      message.action.args = args;
+      
+      return message;
+    },
 
 },
 'converting', {},
@@ -210,11 +235,11 @@ Agent.subclass('LivelyDemoAgent',
 'default category', {
     echo: function(content) {
       log(`echo: ${content}`)
-      this.respond_with(content);
+      this.respondWith(content);
     },
     eval: function(code) {
       let result = eval(code)
-      this.respond_with(result); 
+      this.respondWith(result); 
     }
 });
 Object.subclass('Supervisor',

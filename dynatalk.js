@@ -82,13 +82,23 @@ Object.subclass('Agent',
     */
     try {
       // todo policy
-      let action_method = this[message.action.name].bind(this); // function bind to the object 
+      let action_method = this[message.action.name]; 
       // todo not understood
-      action_method(...message.action.args);
+      if (action_method){
+        // function bind to the object 
+        action_method.bind(this)(...message.action.args);
+      } else {
+        let error = `Message Not Understood: ${message["to"]}>>${message["action"]["name"]}`;
+        console.error(error);
+        this.raiseWith(error);
+      }
+      
+      
     } catch(e) {
       let error = `${this.id}>>${message['action']['name']} raised exception:` + e
       console.error(error);
       this.raiseWith(error);
+      
     }
   },
   interpret: function(message) {

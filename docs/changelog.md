@@ -2,6 +2,16 @@
 
 <!-- 参考 https://github.com/codefrau/SqueakJS?tab=readme-ov-file#changelog -->
 
+### 0.6.0(2024-03-27)
+
+- Agent 
+    -   理解: `ping` (用于在线检测)
+    -   支持 broadcast
+        -   新增 broadcastHelp 方法
+            -   help 相关功能是可选的(完全实现在 agent 内)
+- SqueakDemoAgent 
+    -   理解 `help`
+
 ### 0.5.0(2024-03-25)
 
 -   public api

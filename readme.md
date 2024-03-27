@@ -17,4 +17,10 @@
 
 将当前仓库的 `dynatalk.js` 文件引入 [LivelyKernel](https://github.com/LivelyKernel/LivelyKernel)  进行开发。
 
+<!--
+
+使用软链接将代码仓库放到 lively 中: `ln -s /Users/wwj718/Documents/mylab/dynalab/dynatalk_new/dynatalk-js /Users/wwj718/Documents/mylab/dynalab/lab/LivelyKernel/users/wwj/dynatalk-js`
+
+-->
+
 ## FAQ

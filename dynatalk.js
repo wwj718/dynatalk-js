@@ -66,6 +66,11 @@ Object.subclass('MQTTSpace', // used global variable: window.space
     },
 });
 Object.subclass('Agent',
+'actions', {
+  ping: function(){
+    this.respondWith("pong")
+  },
+},
 'debugging', {},
 'evaluating', {
   _commit: function(message) {
@@ -78,9 +83,10 @@ Object.subclass('Agent',
     try {
       // todo policy
       let action_method = this[message.action.name].bind(this); // function bind to the object 
+      // todo not understood
       action_method(...message.action.args);
     } catch(e) {
-      let error = `${this.id}: raised exception while committing action "${message['action']['name']}"` + e
+      let error = `${this.id}>>${message['action']['name']} raised exception:` + e
       console.error(error);
       this.raiseWith(error);
     }
@@ -91,6 +97,12 @@ Object.subclass('Agent',
     if (this._RESPONSE_ACTION_NAME === message.action.name) {
       // Handle incoming responses. Only useful when agent is used as callee
       console.debug("Handle incoming response", message);
+      
+      // process help response
+      if (message.action.args.value && message.action.args.value.help){
+        this.availableActions[message.from] = message.action.args.value.help
+      }
+
       // process _promises
       this._promises[message.meta.parent_id] && this._promises[message.meta.parent_id].resolve(message.action.args.value);
       delete this._promises[message.meta.parent_id];
@@ -107,12 +119,19 @@ Object.subclass('Agent',
     }
   },
 },
+'help', {
+  broadcastHelp: function(){
+    this.broadcast("help", [])
+  },
+},
 'initialize-release', {
   initialize: function(agentID, receive_own_broadcasts=false) {
     // let testAgent = new Agent("testAgent")
     this._RESPONSE_ACTION_NAME = "[response]";
     this._ERROR_ACTION_NAME = "[error]";
+    this.broadcastFlag = "[broadcast]";
     this._promises = {}; // for request;
+    this.availableActions = {};
     
     this.supervisor = null;
     this.id = agentID || this.constructor.name;
@@ -160,6 +179,9 @@ Object.subclass('Agent',
         let message = this.generateMessage(parentID, agentName, actionName, args);
         return this.send(message);
   },
+    broadcast: function(actionName, args) {
+        this.sendTo(this.broadcastFlag, actionName, args);
+    },
 },
 'receiving', {
   _receive: function(message) {
@@ -241,6 +263,19 @@ Agent.subclass('LivelyDemoAgent',
       log(`echo: ${content}`)
       this.respondWith(content);
     },
+    help: function() {
+      let help = {
+          "add": {
+              "description": "add a and b",
+              "args": ["aNumber", "aNumber"]
+            },
+          "echo": {
+              "description": "echo the content",
+              "args": ["aString"]
+            }
+          }
+      this.respondWith({"help": help});
+    },
 
     add: function(a, b) {
         this.respondWith(a+b);
@@ -282,10 +317,9 @@ Object.subclass('Supervisor',
 },
 'initialize-release', {
   initialize: function() {
-    // let supervisor = new Supervisor();
-    //  supervisor.getAgent('LivelyDemoAgent')
+    this.broadcastFlag = "[broadcast]";
     this.agents = {};
-    this.initAgents();
+    // this.initAgents();
     
     this.space = new MQTTSpace(this);
   },
@@ -312,6 +346,10 @@ Object.subclass('Supervisor',
       let message = this.parseToJson(payload); // mutation
       if (message){
         console.debug("(Supervisor) valid message: ", message);
+        
+        if (message.to === this.broadcastFlag){
+          for (let i in this.agents){this.agents[i]._receive(message)}
+        }
         
         if (message.to in this.agents){
           this.agents[message.to]._receive(message)

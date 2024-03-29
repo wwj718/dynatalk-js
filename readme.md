@@ -9,6 +9,28 @@
 1. [运行一个 MQTT broker](https://github.com/wwj718/Dynatalk/blob/main/mqtt/readme.md)
 2. 然后当前语言的 dynatalk 客户端中开始编程。
 
+## get started
+
+```js
+let supervisor = new Supervisor();
+// agent 既可以作为 server (提供服务给其他 agent) 也可以作为 client (请问其他 agent 的服务)
+let agent = new LivelyDemoAgent("LivelyDemoAgent");  // LivelyDemoAgent 对外提供了两个服务: add, echo
+supervisor.addAgent(agent)
+
+// agent 作为**客户端**, 请求 LivelyEvalAgent 执行 add , 参数是 [1, 2]
+let aPromise = agent.request('LivelyEvalAgent', 'add', [1, 2]);
+aPromise.then((value)=> console.log(value)).
+
+// 与 request 不同, sendTo 没有返回值
+```
+
+发现当前网络上的 agents:
+
+```js
+agent.broadcastHelp();
+setTimeout(()=>{console.log(agent.availableActions)}, 1000);
+```
+
 ## 示例
 
 参考 [examples](./examples/).

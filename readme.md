@@ -22,6 +22,7 @@ let aPromise = agent.request('LivelyEvalAgent', 'add', [1, 2]);
 aPromise.then((value)=> console.log(value)).
 
 // 与 request 不同, sendTo 没有返回值
+// agent.sendTo...
 ```
 
 发现当前网络上的 agents:
@@ -30,6 +31,7 @@ aPromise.then((value)=> console.log(value)).
 agent.broadcastHelp();
 setTimeout(()=>{console.log(agent.availableActions)}, 1000);
 ```
+
 
 ## 示例
 
@@ -46,3 +48,18 @@ setTimeout(()=>{console.log(agent.availableActions)}, 1000);
 -->
 
 ## FAQ
+
+### 配置 MQTT
+
+默认为:
+
+```json
+{   
+    "host": "127.0.0.1",
+    "port": 1883,
+    "username": "guest",
+    "password": "test"
+}
+```
+
+配置方式: `window._mqttConf={"host":...}` 

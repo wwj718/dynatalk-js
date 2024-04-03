@@ -63,3 +63,16 @@ setTimeout(()=>{console.log(agent.availableActions)}, 1000);
 ```
 
 配置方式: `window._mqttConf={"host":...}` 
+
+
+### 如何使用公网 emqx 服务器?
+
+以下是一个例子
+
+```js
+window._mqttConf={   
+    "host": "ws://mqtt.aimaker.space:8083/mqtt",
+    "username": "guest",
+    "password": "test"
+}
+```

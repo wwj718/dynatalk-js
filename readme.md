@@ -71,8 +71,6 @@ setTimeout(()=>{console.log(agent.availableActions)}, 1000);
 
 ```js
 window._mqttConf={   
-    "host": "ws://mqtt.aimaker.space:8083/mqtt",
-    "username": "guest",
-    "password": "test"
+    "url": "ws://guest:test@mqtt.aimaker.space:8083/mqtt"
 }
 ```

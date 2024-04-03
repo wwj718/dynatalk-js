@@ -24,9 +24,15 @@ Object.subclass('MQTTSpace', // used global variable: window.space
       username: 'guest',
       password: 'test'
     };
-    let mergeConf = {...defaultConf, ...window._mqttConf};
-    console.debug("mergeConf:", mergeConf)
-    this._mqttClient = mqtt.connect(mergeConf);
+
+    let conf = null;
+    if (window._mqttConf?.url) {
+      conf = window._mqttConf.url;
+    } else {
+      conf = {...defaultConf, ...window._mqttConf};
+    }
+    console.debug("mqtt conf:", conf);
+    this._mqttClient = mqtt.connect(conf);
 
     this._mqttClient.on("connect", () => {
       // + : subscribe all

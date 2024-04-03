@@ -19,6 +19,13 @@
 
     
     <script>
+      
+      /*
+      window._mqttConf={   
+          "url": "ws://guest:test@mqtt.aimaker.space:8083/mqtt"
+      }
+      */
+     
       let supervisor = new Supervisor();
       let agent = new LivelyDemoAgent("LivelyDemoAgent");
       supervisor.addAgent(agent);

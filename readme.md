@@ -45,6 +45,9 @@ setTimeout(()=>{console.log(agent.availableActions)}, 1000);
 
 使用软链接将代码仓库放到 lively 中: `ln -s /Users/wwj718/Documents/mylab/dynalab/dynatalk_new/dynatalk-js /Users/wwj718/Documents/mylab/dynalab/lab/LivelyKernel/users/wwj/dynatalk-js`
 
+npm start
+
+open http://localhost:9001/dynatalk-v2.html
 -->
 
 ## FAQ

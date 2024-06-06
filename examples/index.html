@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>dynatalk-js demo</title>
-    <script src="./mqtt.min.js"></script>
     <script src="./dynatalk-helper.js"></script>
     <script src="./dynatalk.js"></script>
   </head>
@@ -26,12 +25,14 @@
       }
       */
      
-      let supervisor = new Supervisor();
-      let agent = new LivelyDemoAgent("LivelyDemoAgent");
+      let supervisor = new Supervisor("child");
+      let agent = new LivelyDemoAgent("iframeAgent");
       supervisor.addAgent(agent);
 
 
       async function request(agentName, action, args) {
+        // let aPromise = agent.request('SnapAgent', 'add', [1, 2]);
+        // aPromise.then((value)=> console.log(value))
         let result = await agent.request(agentName, action, args);
         output(result);
       }

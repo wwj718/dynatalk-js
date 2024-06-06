@@ -1,67 +1,48 @@
-// module('users.wwj.dynatalk').requires().requiresLib({url: 'https://unpkg.com/mqtt/dist/mqtt.min.js', loadTest: function() {return typeof mqtt !== "undefined"; }}).toRun(function() {
+module('users.wwj.dynatalk').requires().toRun(function() {
 
-// http://localhost:9001/mqtt.min.js
-// https://unpkg.com/mqtt/dist/mqtt.min.js
-
-Object.subclass('MQTTSpace', // used global variable: window.space
+Object.subclass('PostMessageSpace', // used global variable: window.space
 'initialize-release', {
-  initialize: function(aSupervisor) {
-    // How to create a singleton?
-    // Will redefining the constructor modify the behavior of the lively class?
-    
+  initialize: function(aSupervisor, pageType) {
     this.supervisor = aSupervisor;
     
-    if(window._mqttClient){
-      // Temporarily use a global variable(window.supervisor) to remind that it already exists
-      // throw new Error()
-      window._mqttClient.end();
-      console.warn("Make sure there is only one mqtt client!");
+    this.pageType = pageType // parent or child
+    // There are two types of pages: parent page or child page(iframe page). The only difference is the way of sending the message
+    
+    // handle the messages sent to the current page
+    if (window._handlePostMessage){
+      window.removeEventListener('message', window._handlePostMessage);
     }
-    
-    let defaultConf = {
-      host:'localhost',
-      port:15675,
-      username: 'guest',
-      password: 'test'
-    };
-
-    let conf = null;
-    if (window._mqttConf?.url) {
-      conf = window._mqttConf.url;
-    } else {
-      conf = {...defaultConf, ...window._mqttConf};
+    window._handlePostMessage = (event) => {
+        let topic = event.origin;
+        let message = event.data;
+        console.log('Received message', event.data);
+        this.onMessage(topic, message);
     }
-    console.debug("mqtt conf:", conf);
-    this._mqttClient = mqtt.connect(conf);
-
-    this._mqttClient.on("connect", () => {
-      // + : subscribe all
-      this._mqttClient.subscribe("+", (err) => {
-        if (!err) {
-          // if not lively , redirect log to console.log
-          log("subscribed to +")
-        }
-      });
-    });
-
-    this._mqttClient.on("message", (topic, message) => {
-      // message is Buffer
-      // In lively, functions within objects can be defined dynamically
-      this.onMessage(topic, message)
-    });
-    
-    window._mqttClient = this._mqttClient;
-    
+    window.addEventListener('message', window._handlePostMessage);
   },
-
 },
 'default category', {
+
     _publish: function(topic, payload) {
-      // https://github.com/mqttjs/MQTT.js?tab=readme-ov-file#mqttclientpublishtopic-message-options-callback
-      this._mqttClient.publish(topic, payload,{qos:1});
+      // topic: iframe_id
+      if (this.pageType === "parent"){
+        const iframe_id = `snap_iframe_${topic}`;
+        let iframe = document.getElementById(iframe_id);
+        if (iframe){
+          console.log(`${this.pageType} send ${payload}`)
+          iframe.contentWindow.postMessage(payload, '*');
+        }
+      }
+
+      if (this.pageType === "child"){
+        // ignore id
+        window.parent.postMessage(payload, "*");
+      }
+
     },
+
     onMessage: function(topic, payload) {
-        console.debug(`(space) onMessage: ${payload.toString()}`);
+        console.debug(`(space ${this.pageType}) onMessage: ${payload.toString()}`);
         // Prevent the mqtt message process from being broken
         try{
           this.supervisor.onMessage(topic, payload);
@@ -332,12 +313,12 @@ Object.subclass('Supervisor',
   },
 },
 'initialize-release', {
-  initialize: function() {
+  initialize: function(pageType) {
     this.broadcastFlag = "[broadcast]";
     this.agents = {};
     // this.initAgents();
     
-    this.space = new MQTTSpace(this);
+    this.space = new PostMessageSpace(this, pageType);
   },
   initAgents: function() {
     // todo: Dynamically manage agent life cycle
@@ -380,4 +361,4 @@ Object.subclass('Supervisor',
 });
 
 
-// }) // end of module
+}) // end of module

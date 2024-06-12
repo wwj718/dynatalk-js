@@ -1,3 +1,4 @@
+// ChatGPT (Translated from ./dynatalk.js): https://chatgpt.com/share/f0aa8e38-2534-4dc6-9341-1f57328e7aae
 class PostMessageSpace {
     constructor(aSupervisor, pageType) {
         this.supervisor = aSupervisor;

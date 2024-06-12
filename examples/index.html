@@ -4,25 +4,30 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>dynatalk-js demo</title>
+    <!--
     <script src="./dynatalk-helper.js"></script>
     <script src="./dynatalk.js"></script>
+    -->
   </head>
   <body>
     <div class="container">
-        <input type="text" id="agentName" value="SnapAgent" placeholder="agentName">
-        <input type="text" id="action" value="echo" placeholder="action">
-        <input type="text" id="args" value="hi" placeholder="args">
-        <button onclick="submit()">Submit</button>
-        <div id="output"></div>
+      <input
+        type="text"
+        id="agentName"
+        value="SnapAgent"
+        placeholder="agentName"
+      />
+      <input type="text" id="action" value="echo" placeholder="action" />
+      <input type="text" id="args" value="hi" placeholder="args" />
+      <button id="submit">Submit</button>
+      <div id="output"></div>
     </div>
 
-    
-    <script>
-     
+    <script type="module">
+      import { Supervisor, LivelyDemoAgent } from "./dynatalk-es6.js";
       let supervisor = new Supervisor("child");
       let agent = new LivelyDemoAgent("iframeAgent");
       supervisor.addAgent(agent);
-
 
       async function request(agentName, action, args) {
         // let aPromise = agent.request('SnapAgent', 'add', [1, 2]);
@@ -38,15 +43,16 @@
         let args = document.getElementById("args").value;
         // console.log(agentName, action, args);
         request(agentName, action, args.split(","));
-    }
+      }
 
-    function output(text){
+      function output(text) {
         let outputDiv = document.getElementById("output");
         let newContent = document.createElement("div");
         newContent.textContent = text;
         outputDiv.appendChild(newContent);
       }
 
+      document.getElementById("submit").onclick = submit;
     </script>
   </body>
 </html>

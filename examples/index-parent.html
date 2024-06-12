@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dynatalk-js demo</title>
+    <!--
+    <script src="./dynatalk-helper.js"></script>
+    <script src="./dynatalk.js"></script>
+    -->
+  </head>
+  <body>
+    <iframe id="snap_iframe_child" src="./index-child.html"></iframe>
+    
+    <div class="container">
+      <input
+        type="text"
+        id="agentName"
+        value="child"
+        placeholder="agentName"
+      />
+      <input type="text" id="action" value="echo" placeholder="action" />
+      <input type="text" id="args" value="hi" placeholder="args" />
+      <button id="submit">Submit</button>
+      <div id="output"></div>
+    </div>
+
+    <script type="module">
+      import { Supervisor, LivelyDemoAgent } from "./dynatalk-es6.js";
+      let supervisor = new Supervisor("parent");
+      let agent = new LivelyDemoAgent("parent");
+      supervisor.addAgent(agent);
+
+      async function request(agentName, action, args) {
+        // let aPromise = agent.request('SnapAgent', 'add', [1, 2]);
+        // aPromise.then((value)=> console.log(value))
+        let result = await agent.request(agentName, action, args);
+        output(result);
+      }
+
+      function submit() {
+        // chatgpt: https://chat.openai.com/share/19788b0a-5d2b-4deb-a7da-058250bc1ba4
+        let agentName = document.getElementById("agentName").value;
+        let action = document.getElementById("action").value;
+        let args = document.getElementById("args").value;
+        // console.log(agentName, action, args);
+        request(agentName, action, args.split(","));
+      }
+
+      function output(text) {
+        let outputDiv = document.getElementById("output");
+        let newContent = document.createElement("div");
+        newContent.textContent = text;
+        console.log("output:", text)
+        outputDiv.appendChild(newContent);
+      }
+
+      document.getElementById("submit").onclick = submit;
+    </script>
+  </body>
+</html>

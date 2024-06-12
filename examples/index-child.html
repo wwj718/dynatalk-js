@@ -14,7 +14,7 @@
       <input
         type="text"
         id="agentName"
-        value="SnapAgent"
+        value="parent"
         placeholder="agentName"
       />
       <input type="text" id="action" value="echo" placeholder="action" />
@@ -26,7 +26,7 @@
     <script type="module">
       import { Supervisor, LivelyDemoAgent } from "./dynatalk-es6.js";
       let supervisor = new Supervisor("child");
-      let agent = new LivelyDemoAgent("iframeAgent");
+      let agent = new LivelyDemoAgent("child");
       supervisor.addAgent(agent);
 
       async function request(agentName, action, args) {

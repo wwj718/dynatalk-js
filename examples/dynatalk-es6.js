@@ -20,7 +20,7 @@ class PostMessageSpace {
 
     _publish(topic, payload) {
         if (this.pageType === "parent") {
-            const iframe_id = `snap_iframe_${topic}`;
+            const iframe_id = topic;
             const iframe = document.getElementById(iframe_id);
             if (iframe) {
                 console.log(`${this.pageType} send ${payload}`);
@@ -238,7 +238,7 @@ class Supervisor {
                 console.log("(Supervisor) bad message");
             }
         } catch (e) {
-            alert("Supervisor parseToJson error: " + e);
+            console.error("Supervisor parseToJson error: " + e);
         }
         return null;
     }

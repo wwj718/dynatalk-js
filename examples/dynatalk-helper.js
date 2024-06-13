@@ -50,4 +50,4 @@ if (!Function.prototype.subclass) {
 }
 
 window.log = console.log;
-window.alert = console.error;
+// window.alert = console.error;

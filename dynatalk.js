@@ -26,7 +26,7 @@ Object.subclass('PostMessageSpace', // used global variable: window.space
     _publish: function(topic, payload) {
       // topic: iframe_id
       if (this.pageType === "parent"){
-        const iframe_id = `snap_iframe_${topic}`;
+        const iframe_id = topic;
         let iframe = document.getElementById(iframe_id);
         if (iframe){
           console.log(`${this.pageType} send ${payload}`)
@@ -307,7 +307,7 @@ Object.subclass('Supervisor',
           log("(Supervisor) bad message")
         }
     } catch(e) {
-        alert("Supervisor parseToJson error: " + e);
+        console.error("Supervisor parseToJson error: " + e);
     }
     return null;
   },
